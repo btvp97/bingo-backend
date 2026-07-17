@@ -1,0 +1,137 @@
+// Backend data model for the bingo coordinator.
+// See ../../backend-data-model.md for the full write-up of why it's shaped this way.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Metric {
+  KILL_COUNT
+  ITEM_OBTAINED
+  ACTIVITY_COMPLETION
+}
+
+enum Mode {
+  SUM
+  EACH
+}
+
+enum BoardStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// Top-level tenant. Every clan that adopts the plugin off the Hub gets one of
+// these — keeps boards/teams/join codes scoped per clan from day one instead of
+// retrofitting multi-tenancy later.
+model Clan {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  boards    Board[]
+}
+
+model Board {
+  id              String      @id @default(cuid())
+  clanId          String
+  clan            Clan        @relation(fields: [clanId], references: [id])
+  name            String
+  description     String?
+  rows            Int
+  cols            Int
+  bonusHorizontal Int         @default(0)
+  bonusVertical   Int         @default(0)
+  bonusDiagonal   Int         @default(0)
+  bonusBlackout   Int         @default(0)
+  status          BoardStatus @default(DRAFT)
+  createdAt       DateTime    @default(now())
+  tiles           Tile[]
+  teams           Team[]
+}
+
+model Tile {
+  id             String         @id @default(cuid())
+  boardId        String
+  board          Board          @relation(fields: [boardId], references: [id])
+  title          String
+  points         Int
+  row            Int
+  col            Int
+  repeatable     Boolean        @default(false)
+  bonusPerRepeat Int?
+  metric         Metric
+  mode           Mode
+  target         Int
+  sources        String[]       // NPC / item / activity names — matches the
+                                 // tile-criteria-schema.md "sources" list directly
+  progress       TileProgress[]
+
+  @@unique([boardId, row, col])
+}
+
+model Team {
+  id        String            @id @default(cuid())
+  boardId   String
+  board     Board             @relation(fields: [boardId], references: [id])
+  name      String
+  joinCode  String            @unique // shareable invite code, not a personal
+                                        // password — looked up directly (like a
+                                        // Discord invite), not hashed
+  createdAt DateTime          @default(now())
+  members   TeamMember[]
+  progress  TileProgress[]
+  events    CompletionEvent[]
+
+  @@unique([boardId, name])
+}
+
+// Open-join model: whoever authenticates with the join code gets upserted here
+// by RSN. No separate roster pre-registration step needed.
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  team     Team     @relation(fields: [teamId], references: [id])
+  rsn      String
+  joinedAt DateTime @default(now())
+
+  @@unique([teamId, rsn])
+}
+
+// Materialized current state per (team, tile) — what the plugin actually reads
+// to render the board. Derived from, and kept in sync with, CompletionEvent.
+model TileProgress {
+  id           String    @id @default(cuid())
+  teamId       String
+  team         Team      @relation(fields: [teamId], references: [id])
+  tileId       String
+  tile         Tile      @relation(fields: [tileId], references: [id])
+  sumProgress  Int       @default(0)     // running total, used when tile.mode == SUM
+  eachProgress Json      @default("{}")  // { [source]: count }, used when tile.mode == EACH
+  repeatCount  Int       @default(0)     // credits past first completion (repeatable tiles only)
+  completedAt  DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([teamId, tileId])
+}
+
+// Append-only audit log of every reported completion. Kept even though the
+// trust model is auto-accept, so a future "flag for spot-check" mode doesn't
+// require re-architecting — just adding a review step that reads this table.
+model CompletionEvent {
+  id          String   @id @default(cuid())
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id])
+  tileId      String
+  reportedBy  String   // RSN of the player whose client detected it
+  metric      Metric
+  source      String   // the specific NPC / item / activity name matched
+  amount      Int      @default(1)
+  rawEvidence String?  // the raw chat line that triggered the match
+  createdAt   DateTime @default(now())
+}

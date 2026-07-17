@@ -1,0 +1,212 @@
+{
+  "boardName": "Misclickers Fall Bingo",
+  "sourceUrl": "https://www.osrsbingohub.com/boards/5828",
+  "bonuses": {
+    "horizontal": 5,
+    "vertical": 5,
+    "diagonal": 10,
+    "blackout": 0
+  },
+  "tiles": [
+    {
+      "title": "Obtain all 4 Pieces of the Soulreaper Axe",
+      "points": 5,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "each",
+        "target": 1,
+        "sources": ["Soulreaper axe piece 1", "Soulreaper axe piece 2", "Soulreaper axe piece 3", "Soulreaper axe piece 4"]
+      }
+    },
+    {
+      "title": "Obtain a Dragon Chainbody",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 1, "sources": ["Dragon chainbody"] }
+    },
+    {
+      "title": "Obtain 5000 Pieces of Eight",
+      "points": 2,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 5000, "sources": ["Pieces of Eight"] }
+    },
+    {
+      "title": "Win 10 Games of Last Man Standing",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "activity_completion", "mode": "sum", "target": 10, "sources": ["Last Man Standing win"] }
+    },
+    {
+      "title": "Kill the Nightmare 200 Times",
+      "points": 5,
+      "repeatable": false,
+      "criteria": { "metric": "kill_count", "mode": "sum", "target": 200, "sources": ["The Nightmare"] }
+    },
+    {
+      "title": "Obtain a Full Set of Zealot's Robes",
+      "points": 3,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "each",
+        "target": 1,
+        "sources": ["Zealot's helm", "Zealot's robe top", "Zealot's robe bottom", "Zealot's boots"]
+      }
+    },
+    {
+      "title": "Slay 1000 Slayer Bosses",
+      "points": 1,
+      "repeatable": false,
+      "criteria": {
+        "metric": "kill_count",
+        "mode": "sum",
+        "target": 1000,
+        "sources": ["Shellbane Grypon", "Grotesque Guardians", "Abyssal Sire", "Cerberus", "Thermonuclear Smoke Devil", "Alchemical Hydra"]
+      }
+    },
+    {
+      "title": "Complete 200 Hunter Rumours",
+      "points": 1,
+      "repeatable": false,
+      "criteria": { "metric": "activity_completion", "mode": "sum", "target": 200, "sources": ["Hunter rumour completion"] }
+    },
+    {
+      "title": "Obtain 3 Sarachnis Cudgels",
+      "points": 1,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 3, "sources": ["Sarachnis cudgel"] }
+    },
+    {
+      "title": "Obtain 3 Tormented Synapses",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 3, "sources": ["Tormented synapse"] }
+    },
+    {
+      "title": "Obtain 30 Huetycoatl Hides",
+      "points": 2,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 30, "sources": ["Huetycoatl hide"] }
+    },
+    {
+      "title": "Complete the Fight Caves 10 Times",
+      "points": 1,
+      "repeatable": false,
+      "criteria": { "metric": "activity_completion", "mode": "sum", "target": 10, "sources": ["Fight Caves completion"] }
+    },
+    {
+      "title": "Get a Pet (repeatable)",
+      "points": 3,
+      "repeatable": true,
+      "bonusPerRepeat": 3,
+      "criteria": { "metric": "activity_completion", "mode": "sum", "target": 1, "sources": ["Pet received"] }
+    },
+    {
+      "title": "Defeat the Royal Titans 300 Times",
+      "points": 1,
+      "repeatable": false,
+      "criteria": { "metric": "kill_count", "mode": "sum", "target": 300, "sources": ["Royal Titans"] }
+    },
+    {
+      "title": "Get a Unique Drop from the Grotesque Guardians",
+      "points": 2,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "sum",
+        "target": 1,
+        "sources": ["Granite gloves", "Granite ring", "Granite hammer", "Black tourmaline core"]
+      }
+    },
+    {
+      "title": "Obtain a Dragon Warhammer",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 1, "sources": ["Dragon warhammer"] }
+    },
+    {
+      "title": "Obtain a Ring from Each of the Dagannoth Kings",
+      "points": 1,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "each",
+        "target": 1,
+        "sources": ["Berserker ring", "Archer ring", "Warrior ring"]
+      }
+    },
+    {
+      "title": "Complete 50 Medium Clues",
+      "points": 1,
+      "repeatable": false,
+      "criteria": { "metric": "activity_completion", "mode": "sum", "target": 50, "sources": ["Medium clue casket"] }
+    },
+    {
+      "title": "Obtain a Piece of Dagon'hai",
+      "points": 1,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "sum",
+        "target": 1,
+        "sources": ["Dagon'hai hat", "Dagon'hai robe top", "Dagon'hai robe bottom"]
+      }
+    },
+    {
+      "title": "Obtain the Angler's Paint",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "sum", "target": 1, "sources": ["Angler's paint"] }
+    },
+    {
+      "title": "Get a Sigil From Corporeal Beast",
+      "points": 5,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "sum",
+        "target": 1,
+        "sources": ["Arcane sigil", "Spectral sigil", "Elysian sigil"]
+      }
+    },
+    {
+      "title": "Defeat Demonic Brutus",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "kill_count", "mode": "sum", "target": 1, "sources": ["Demonic Brutus"] }
+    },
+    {
+      "title": "Complete All 3 Full Sets of Moons Armor",
+      "points": 2,
+      "repeatable": false,
+      "criteria": {
+        "metric": "item_obtained",
+        "mode": "each",
+        "target": 1,
+        "sources": [
+          "Blood moon helm", "Blood moon tassets", "Blood moon gauntlets",
+          "Blue moon helm", "Blue moon tassets", "Blue moon gauntlets",
+          "Eclipse moon helm", "Eclipse moon tassets", "Eclipse moon gauntlets"
+        ]
+      }
+    },
+    {
+      "title": "Defeat Yama 150 Times",
+      "points": 3,
+      "repeatable": false,
+      "criteria": { "metric": "kill_count", "mode": "sum", "target": 150, "sources": ["Yama"] }
+    },
+    {
+      "title": "Complete 50 Raids",
+      "points": 5,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 50,
+        "sources": ["Chambers of Xeric completion", "Theatre of Blood completion", "Tombs of Amascut completion"]
+      }
+    }
+  ]
+}
