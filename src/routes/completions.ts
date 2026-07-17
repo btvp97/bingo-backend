@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { applyCompletionEvent, type ProgressState, type TileCriteria } from "../lib/completionLogic.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 import { type AuthedRequest, authenticateTeam } from "../middleware/authenticateTeam.js";
 import { computeScore } from "../scoring.js";
 import { getIO } from "../socket.js";
@@ -20,7 +21,7 @@ const completionSchema = z.object({
 // What the plugin calls the moment it detects a matching game event. This is
 // the one endpoint that actually changes board state and broadcasts to the
 // team over the socket — everything else here is either auth or reads.
-router.post("/", authenticateTeam, async (req: AuthedRequest, res) => {
+router.post("/", authenticateTeam, asyncHandler(async (req: AuthedRequest, res) => {
   const parsed = completionSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -122,6 +123,6 @@ router.post("/", authenticateTeam, async (req: AuthedRequest, res) => {
     });
 
   res.json({ accepted: true, justCompleted: result.justCompleted, repeatCredited: result.repeatCredited, score });
-});
+}));
 
 export default router;

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { signTeamToken } from "../auth.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ const joinSchema = z.object({
 // This is what the plugin calls when a player enters their team's join code
 // in the config panel. Open-join: the first time an RSN shows up with a valid
 // code, it's added to the team automatically.
-router.post("/join", async (req, res) => {
+router.post("/join", asyncHandler(async (req, res) => {
   const parsed = joinSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -36,6 +37,6 @@ router.post("/join", async (req, res) => {
 
   const token = signTeamToken({ teamId: team.id, boardId: team.boardId, rsn });
   res.json({ token, teamId: team.id, teamName: team.name, boardId: team.boardId });
-});
+}));
 
 export default router;

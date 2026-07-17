@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
 import { type AuthedRequest, authenticateTeam } from "../middleware/authenticateTeam.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 import { computeScore } from "../scoring.js";
 
 const router = Router();
@@ -8,7 +9,7 @@ const router = Router();
 // GET /boards/:boardId/state
 // What the plugin's side panel renders from: every tile on the board, plus
 // this team's current progress and score.
-router.get("/:boardId/state", authenticateTeam, async (req: AuthedRequest, res) => {
+router.get("/:boardId/state", authenticateTeam, asyncHandler(async (req: AuthedRequest, res) => {
   const { boardId } = req.params;
   if (req.team!.boardId !== boardId) {
     res.status(403).json({ error: "Token is not valid for this board" });
@@ -66,6 +67,6 @@ router.get("/:boardId/state", authenticateTeam, async (req: AuthedRequest, res) 
     tiles,
     score,
   });
-});
+}));
 
 export default router;

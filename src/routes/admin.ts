@@ -3,6 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { env } from "../env.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 
 const router = Router();
 
@@ -47,7 +48,7 @@ const createBoardSchema = z.object({
 // POST /admin/boards
 // Body is the same shape as tile-criteria-schema.md's board JSON, plus a
 // clanId and explicit cols (the source JSON doesn't carry grid layout).
-router.post("/boards", requireAdmin, async (req, res) => {
+router.post("/boards", requireAdmin, asyncHandler(async (req, res) => {
   const parsed = createBoardSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -90,13 +91,13 @@ router.post("/boards", requireAdmin, async (req, res) => {
   });
 
   res.status(201).json(board);
-});
+}));
 
 // POST /admin/boards/:boardId/teams
 // Generates a shareable join code — this is the only time it's returned, so
 // hand it to the team right away (it's not a secret stored for you to look
 // up later, though you can always see it via the admin board-state view).
-router.post("/boards/:boardId/teams", requireAdmin, async (req, res) => {
+router.post("/boards/:boardId/teams", requireAdmin, asyncHandler(async (req, res) => {
   const parsed = z.object({ name: z.string() }).safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -110,6 +111,6 @@ router.post("/boards/:boardId/teams", requireAdmin, async (req, res) => {
   });
 
   res.status(201).json(team);
-});
+}));
 
 export default router;
