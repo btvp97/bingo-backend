@@ -40,6 +40,12 @@ router.get("/:boardId/state", authenticateTeam, asyncHandler(async (req: AuthedR
       col: tile.col,
       repeatable: tile.repeatable,
       target: tile.target,
+      // Detection criteria — the plugin needs these to know what game events
+      // to watch for. Previously omitted since only the score/progress
+      // mattered for rendering; now needed for client-side event matching.
+      metric: tile.metric,
+      mode: tile.mode,
+      sources: tile.sources,
       completed: !!p?.completedAt,
       repeatCount: p?.repeatCount ?? 0,
       sumProgress: p?.sumProgress ?? 0,

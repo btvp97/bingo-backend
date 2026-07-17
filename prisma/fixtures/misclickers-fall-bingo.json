@@ -93,7 +93,7 @@
       "title": "Complete the Fight Caves 10 Times",
       "points": 1,
       "repeatable": false,
-      "criteria": { "metric": "activity_completion", "mode": "sum", "target": 10, "sources": ["Fight Caves completion"] }
+      "criteria": { "metric": "kill_count", "mode": "sum", "target": 10, "sources": ["TzTok-Jad"] }
     },
     {
       "title": "Get a Pet (repeatable)",
@@ -205,7 +205,7 @@
         "metric": "activity_completion",
         "mode": "sum",
         "target": 50,
-        "sources": ["Chambers of Xeric completion", "Theatre of Blood completion", "Tombs of Amascut completion"]
+        "sources": ["raid completion"]
       }
     }
   ]
