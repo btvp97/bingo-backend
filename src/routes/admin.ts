@@ -24,6 +24,10 @@ const tileSchema = z.object({
   points: z.number().int(),
   repeatable: z.boolean().optional(),
   bonusPerRepeat: z.number().int().optional(),
+  // OSRS item ID to render on the tile instead of its title text (see
+  // ItemManager.getImage() on the plugin side). Optional — omit to keep the
+  // existing text-only tile rendering.
+  iconItemId: z.number().int().positive().optional(),
   criteria: z.object({
     metric: z.enum(["kill_count", "item_obtained", "activity_completion"]),
     mode: z.enum(["sum", "each"]),
@@ -80,6 +84,7 @@ router.post("/boards", requireAdmin, asyncHandler(async (req, res) => {
           col: index % cols,
           repeatable: tile.repeatable ?? false,
           bonusPerRepeat: tile.bonusPerRepeat ?? null,
+          iconItemId: tile.iconItemId ?? null,
           metric: tile.criteria.metric.toUpperCase() as "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION",
           mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH",
           target: tile.criteria.target,

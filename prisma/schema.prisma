@@ -70,6 +70,12 @@ model Tile {
   target         Int
   sources        String[]       // NPC / item / activity names — matches the
                                  // tile-criteria-schema.md "sources" list directly
+  iconItemId     Int?           // Optional OSRS item ID rendered client-side via
+                                 // RuneLite's ItemManager instead of tile text.
+                                 // Independent of metric/sources — a KILL_COUNT
+                                 // tile can point at any representative item
+                                 // (there's no equivalent live-rendered NPC
+                                 // portrait API to use instead).
   progress       TileProgress[]
 
   @@unique([boardId, row, col])
