@@ -40,6 +40,59 @@ test("EACH mode requires every source before completing", () => {
   assert.equal(result.justCompleted, true);
 });
 
+test("EACH mode with sourceTargets requires each source's own target, not a shared one", () => {
+  const criteria: TileCriteria = {
+    metric: "KILL_COUNT",
+    mode: "EACH",
+    target: 1, // unused fallback here since sourceTargets covers every source
+    sources: ["Goblin", "Chicken"],
+    sourceTargets: { Goblin: 2, Chicken: 3 },
+    repeatable: false,
+  };
+  let progress = emptyProgress();
+
+  // One Goblin kill — Goblin needs 2, not done yet.
+  let result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Goblin", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  // Second Goblin kill hits its target, but Chicken (needs 3) has zero — still not done.
+  result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Goblin", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  assert.equal(result.progress.eachProgress["Goblin"], 2);
+  progress = result.progress;
+
+  // Two Chickens — still short of its own target of 3.
+  result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Chicken", amount: 2 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  // Third Chicken completes the tile, since Goblin already met its own target.
+  result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Chicken", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
+test("EACH mode falls back to shared target for a source missing from sourceTargets", () => {
+  const criteria: TileCriteria = {
+    metric: "KILL_COUNT",
+    mode: "EACH",
+    target: 2,
+    sources: ["Goblin", "Chicken"],
+    sourceTargets: { Goblin: 2 }, // Chicken isn't listed, so it falls back to target=2
+    repeatable: false,
+  };
+  let progress = emptyProgress();
+
+  let result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Goblin", amount: 2 });
+  progress = result.progress;
+  result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Chicken", amount: 1 });
+  assert.equal(result.justCompleted, false); // Chicken needs the fallback target of 2, only has 1
+  progress = result.progress;
+
+  result = applyCompletionEvent(criteria, progress, { metric: "KILL_COUNT", source: "Chicken", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
 test("repeatable tile grants bonus credit after completion instead of re-completing", () => {
   const criteria: TileCriteria = {
     metric: "ACTIVITY_COMPLETION",

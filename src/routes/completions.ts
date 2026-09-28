@@ -49,6 +49,7 @@ router.post("/", authenticateTeam, asyncHandler(async (req: AuthedRequest, res) 
     target: tile.target,
     sources: tile.sources,
     repeatable: tile.repeatable,
+    sourceTargets: (tile.sourceTargets as Record<string, number> | null) ?? undefined,
   };
   const before: ProgressState = existing
     ? {

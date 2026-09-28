@@ -33,6 +33,9 @@ const tileSchema = z.object({
     mode: z.enum(["sum", "each"]),
     target: z.number().int().positive(),
     sources: z.array(z.string()).min(1),
+    // EACH mode only — per-source override of target, e.g. {"Goblin": 2,
+    // "Chicken": 3}. A source missing from this map uses `target` instead.
+    sourceTargets: z.record(z.string(), z.number().int().positive()).optional(),
   }),
 });
 
@@ -89,6 +92,7 @@ router.post("/boards", requireAdmin, asyncHandler(async (req, res) => {
           mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH",
           target: tile.criteria.target,
           sources: tile.criteria.sources,
+          sourceTargets: tile.criteria.sourceTargets ?? null,
         })),
       },
     },

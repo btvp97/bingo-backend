@@ -70,6 +70,13 @@ model Tile {
   target         Int
   sources        String[]       // NPC / item / activity names — matches the
                                  // tile-criteria-schema.md "sources" list directly
+  sourceTargets  Json?          // Optional { [source]: target } override for EACH
+                                 // mode tiles whose sources need different counts
+                                 // (e.g. "2 Goblins AND 3 Chickens" instead of the
+                                 // same target for every source). Any source not
+                                 // present in this map — or every source, when the
+                                 // whole field is null — falls back to the tile's
+                                 // single `target`. Ignored for SUM mode.
   iconItemId     Int?           // Optional OSRS item ID rendered client-side via
                                  // RuneLite's ItemManager instead of tile text.
                                  // Independent of metric/sources — a KILL_COUNT

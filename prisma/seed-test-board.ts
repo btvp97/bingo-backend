@@ -1,5 +1,12 @@
-// Loads a board authored in the tile-criteria-schema.md JSON shape into the
-// database. Run with `npm run seed` after `npm run prisma:migrate`.
+// Loads prisma/fixtures/test-board-early-game.json into the database as a
+// new Board named "Test Board" — matches the name reset-test-board.js
+// expects, so that script keeps working against this board unmodified.
+//
+// Same JSON shape as seed.ts/misclickers-fall-bingo.json (see
+// docs/tile-criteria-schema.md), just a different fixture file and a
+// pre-flight check so re-running this doesn't silently create duplicates.
+//
+// Usage: npx tsx prisma/seed-test-board.ts
 import { PrismaClient } from "@prisma/client";
 import fs from "node:fs";
 import path from "node:path";
@@ -24,15 +31,11 @@ type SourceBoard = {
 
 async function main() {
   const raw = fs.readFileSync(
-    path.join(__dirname, "fixtures", "misclickers-fall-bingo.json"),
+    path.join(__dirname, "fixtures", "test-board-early-game.json"),
     "utf-8"
   );
   const data: SourceBoard = JSON.parse(raw);
 
-  // The source JSON doesn't carry a grid layout, just an ordered tile list.
-  // Assuming a square-ish 5-column grid since 25 tiles / 5 = 5x5, the standard
-  // bingo shape — worth double-checking against the live board if you seed a
-  // board whose tile count doesn't divide evenly.
   const cols = 5;
   if (data.tiles.length % cols !== 0) {
     throw new Error(
@@ -40,6 +43,16 @@ async function main() {
     );
   }
   const rows = data.tiles.length / cols;
+
+  const existing = await prisma.board.findFirst({ where: { name: data.boardName } });
+  if (existing) {
+    console.log(
+      `A board named "${data.boardName}" already exists (${existing.id}). ` +
+      `Delete it first (or rename this fixture's boardName) if you want a fresh copy — not overwriting automatically.`
+    );
+    await prisma.$disconnect();
+    return;
+  }
 
   const clan = await prisma.clan.upsert({
     where: { id: "misclickers" },
@@ -66,7 +79,6 @@ async function main() {
           col: index % cols,
           repeatable: tile.repeatable ?? false,
           bonusPerRepeat: tile.bonusPerRepeat ?? null,
-          // The source JSON uses lowercase snake_case; the DB enum is UPPER_CASE.
           metric: tile.criteria.metric.toUpperCase() as "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION",
           mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH",
           target: tile.criteria.target,
@@ -79,6 +91,7 @@ async function main() {
   });
 
   console.log(`Seeded board "${board.name}" (${board.id}) with ${board.tiles.length} tiles.`);
+  console.log(`Create a team against it via POST /admin/boards/${board.id}/teams.`);
 }
 
 main()

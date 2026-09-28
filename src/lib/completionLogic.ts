@@ -7,6 +7,9 @@
 //                  completes when the total reaches target.
 //   - mode "each": every source in the list needs its own count to reach
 //                  target (usually 1); tile completes when all sources do.
+//                  A source can override that shared target via
+//                  criteria.sourceTargets (e.g. {"Goblin": 2, "Chicken": 3});
+//                  any source missing from that map falls back to `target`.
 //   - repeatable:  once complete, further matching events don't re-complete
 //                  the tile — they add to repeatCount instead, which the
 //                  caller turns into bonus points via bonusPerRepeat.
@@ -20,6 +23,9 @@ export type TileCriteria = {
   target: number;
   sources: string[];
   repeatable: boolean;
+  // EACH mode only — per-source override of `target`. A source not present
+  // here (or this being undefined entirely) uses `target` as usual.
+  sourceTargets?: Record<string, number>;
 };
 
 export type ProgressState = {
@@ -86,11 +92,23 @@ export function applyCompletionEvent(
   // mode === "EACH"
   const eachProgress = { ...progress.eachProgress };
   eachProgress[canonicalSource] = (eachProgress[canonicalSource] ?? 0) + input.amount;
-  const allDone = criteria.sources.every((s) => (eachProgress[s] ?? 0) >= criteria.target);
+  const allDone = criteria.sources.every((s) => (eachProgress[s] ?? 0) >= targetFor(criteria, s));
   const updated: ProgressState = {
     ...progress,
     eachProgress,
     completedAt: allDone ? now : null,
   };
   return { progress: updated, justCompleted: allDone, repeatCredited: false };
+}
+
+// The target a given EACH-mode source needs to hit: its own override from
+// criteria.sourceTargets if one exists (matched case-insensitively, same as
+// source matching elsewhere in this file), otherwise the tile's shared
+// `target`.
+function targetFor(criteria: TileCriteria, source: string): number {
+  if (!criteria.sourceTargets) {
+    return criteria.target;
+  }
+  const key = Object.keys(criteria.sourceTargets).find((k) => k.toLowerCase() === source.toLowerCase());
+  return key !== undefined ? criteria.sourceTargets[key] : criteria.target;
 }

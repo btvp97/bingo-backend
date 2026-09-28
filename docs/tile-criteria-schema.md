@@ -31,7 +31,19 @@ Every tile reduces to one of two detection mechanisms:
   count" tiles (target=1 with a list = "obtain any one of these items").
 - **mode: each** — every source in the list needs its own count to hit `target`
   (usually 1). Used for "full set" / "one of each" tiles — a Zealot's robes set, DK
-  rings, Moons armor pieces.
+  rings, Moons armor pieces. If sources need *different* counts (e.g. "Kill 2
+  Goblins AND 3 Chickens" as one tile), add an optional `sourceTargets` object
+  mapping source → its own target; any source missing from that map falls back
+  to the shared `target`:
+  ```json
+  {
+    "metric": "kill_count",
+    "mode": "each",
+    "target": 1,
+    "sources": ["Goblin", "Chicken"],
+    "sourceTargets": { "Goblin": 2, "Chicken": 3 }
+  }
+  ```
 - **repeatable** — if true, the tile can be credited more than once per team (only
   "Get a Pet" on this board). Pairs with **bonusPerRepeat**: once the tile first
   completes (target reached), each additional matching event afterward adds
