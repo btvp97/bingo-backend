@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { Router } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { env } from "../env.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
@@ -119,8 +120,11 @@ router.post("/boards", requireAdmin, asyncHandler(async (req, res) => {
             tile.criteria.mode === "and_or"
               ? [...new Set(tile.criteria.groups!.flatMap((g) => g.conditions.map((c) => c.source)))]
               : tile.criteria.sources!,
-          sourceTargets: tile.criteria.sourceTargets ?? null,
-          groups: tile.criteria.groups ?? null,
+          // Json? fields can't take a plain `null` in Prisma's create input —
+          // that's ambiguous between SQL NULL and a JSON null value — so the
+          // "not set" case needs the Prisma.DbNull sentinel instead.
+          sourceTargets: tile.criteria.sourceTargets ?? Prisma.DbNull,
+          groups: tile.criteria.groups ?? Prisma.DbNull,
         })),
       },
     },

@@ -23,7 +23,7 @@ if (match) {
   process.env.DATABASE_URL = match[1];
 }
 
-const { PrismaClient } = require("@prisma/client");
+const { Prisma, PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const BOARD_NAME = "Test Board";
@@ -42,7 +42,8 @@ const NEW_TILE = {
   mode: "AND_OR",
   target: 1, // unused placeholder for this mode
   sources: [...new Set(groups.flatMap((g) => g.conditions.map((c) => c.source)))],
-  sourceTargets: null,
+  // Prisma.DbNull rather than plain `null` for Json? fields — see admin.ts.
+  sourceTargets: Prisma.DbNull,
   groups,
 };
 

@@ -1,6 +1,6 @@
 // Loads a board authored in the tile-criteria-schema.md JSON shape into the
 // database. Run with `npm run seed` after `npm run prisma:migrate`.
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -83,8 +83,10 @@ async function main() {
             tile.criteria.mode === "and_or"
               ? [...new Set(tile.criteria.groups!.flatMap((g) => g.conditions.map((c) => c.source)))]
               : tile.criteria.sources!,
-          sourceTargets: tile.criteria.sourceTargets ?? null,
-          groups: tile.criteria.groups ?? null,
+          // Json? fields need Prisma.DbNull rather than plain `null` in
+          // create input — see the note in src/routes/admin.ts.
+          sourceTargets: tile.criteria.sourceTargets ?? Prisma.DbNull,
+          groups: tile.criteria.groups ?? Prisma.DbNull,
         })),
       },
     },
