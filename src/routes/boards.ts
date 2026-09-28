@@ -47,6 +47,7 @@ router.get("/:boardId/state", authenticateTeam, asyncHandler(async (req: AuthedR
       mode: tile.mode,
       sources: tile.sources,
       sourceTargets: tile.sourceTargets,
+      groups: tile.groups,
       iconItemId: tile.iconItemId,
       completed: !!p?.completedAt,
       repeatCount: p?.repeatCount ?? 0,

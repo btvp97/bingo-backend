@@ -19,6 +19,12 @@ enum Metric {
 enum Mode {
   SUM
   EACH
+  // Nested boolean logic: tile.groups is a list of OR-groups (each a list of
+  // {source, target} conditions), and the tile completes only when every
+  // group has at least one satisfied condition — i.e. an AND across groups,
+  // an OR within each group. `target`/`sources`/`sourceTargets` are unused
+  // placeholders for this mode; the real criteria lives in `groups`.
+  AND_OR
 }
 
 enum BoardStatus {
@@ -77,6 +83,9 @@ model Tile {
                                  // present in this map — or every source, when the
                                  // whole field is null — falls back to the tile's
                                  // single `target`. Ignored for SUM mode.
+  groups         Json?          // AND_OR mode only: [{ conditions: [{source,
+                                 // target}] }]. Tile completes when every group
+                                 // has at least one condition met. See Mode.AND_OR.
   iconItemId     Int?           // Optional OSRS item ID rendered client-side via
                                  // RuneLite's ItemManager instead of tile text.
                                  // Independent of metric/sources — a KILL_COUNT

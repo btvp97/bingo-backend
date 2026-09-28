@@ -1,7 +1,11 @@
 // One-off utility: resets tile progress for every team on the Test Board
 // back to zero/incomplete. Leaves CompletionEvent (the audit log) untouched.
 //
-// Usage: node reset-test-board.js
+// .cjs extension is deliberate: package.json has "type": "module", so a
+// plain .js file here would be loaded as an ES module and require() would
+// fail — .cjs forces CommonJS regardless of that setting.
+//
+// Usage: node reset-test-board.cjs
 // Safe to delete this file after running it.
 
 const fs = require("fs");

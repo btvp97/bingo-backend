@@ -10,12 +10,23 @@
 //                  A source can override that shared target via
 //                  criteria.sourceTargets (e.g. {"Goblin": 2, "Chicken": 3});
 //                  any source missing from that map falls back to `target`.
+//   - mode "and_or": nested boolean logic. criteria.groups is a list of
+//                  OR-groups, each a list of {source, target} conditions;
+//                  the tile completes only when EVERY group has at least one
+//                  satisfied condition — AND across groups, OR within a
+//                  group, e.g. (Bones OR Big bones) AND (Ashes OR Chef's
+//                  hat). Reuses the same eachProgress {source: count} map
+//                  EACH mode uses; target/sources/sourceTargets are unused
+//                  placeholders for this mode.
 //   - repeatable:  once complete, further matching events don't re-complete
 //                  the tile — they add to repeatCount instead, which the
 //                  caller turns into bonus points via bonusPerRepeat.
 
 export type Metric = "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION";
-export type Mode = "SUM" | "EACH";
+export type Mode = "SUM" | "EACH" | "AND_OR";
+
+export type AndOrCondition = { source: string; target: number };
+export type AndOrGroup = { conditions: AndOrCondition[] };
 
 export type TileCriteria = {
   metric: Metric;
@@ -26,6 +37,8 @@ export type TileCriteria = {
   // EACH mode only — per-source override of `target`. A source not present
   // here (or this being undefined entirely) uses `target` as usual.
   sourceTargets?: Record<string, number>;
+  // AND_OR mode only — see the note above. Required (non-empty) for that mode.
+  groups?: AndOrGroup[];
 };
 
 export type ProgressState = {
@@ -62,7 +75,12 @@ export function applyCompletionEvent(
     return { progress, justCompleted: false, repeatCredited: false, rejected: "metric mismatch" };
   }
 
-  const canonicalSource = criteria.sources.find(
+  const candidateSources =
+    criteria.mode === "AND_OR"
+      ? (criteria.groups ?? []).flatMap((g) => g.conditions.map((c) => c.source))
+      : criteria.sources;
+
+  const canonicalSource = candidateSources.find(
     (s) => s.toLowerCase() === input.source.toLowerCase()
   );
   if (!canonicalSource) {
@@ -89,16 +107,33 @@ export function applyCompletionEvent(
     return { progress: updated, justCompleted: completed, repeatCredited: false };
   }
 
-  // mode === "EACH"
+  if (criteria.mode === "EACH") {
+    const eachProgress = { ...progress.eachProgress };
+    eachProgress[canonicalSource] = (eachProgress[canonicalSource] ?? 0) + input.amount;
+    const allDone = criteria.sources.every((s) => (eachProgress[s] ?? 0) >= targetFor(criteria, s));
+    const updated: ProgressState = {
+      ...progress,
+      eachProgress,
+      completedAt: allDone ? now : null,
+    };
+    return { progress: updated, justCompleted: allDone, repeatCredited: false };
+  }
+
+  // mode === "AND_OR"
   const eachProgress = { ...progress.eachProgress };
   eachProgress[canonicalSource] = (eachProgress[canonicalSource] ?? 0) + input.amount;
-  const allDone = criteria.sources.every((s) => (eachProgress[s] ?? 0) >= targetFor(criteria, s));
+  // A tile with no groups defined is a data error, not a trivially-satisfied
+  // tile — .every() on an empty array is vacuously true, so guard against it
+  // explicitly rather than let a misconfigured tile silently auto-complete.
+  const allGroupsSatisfied =
+    (criteria.groups ?? []).length > 0 &&
+    criteria.groups!.every((group) => group.conditions.some((c) => (eachProgress[c.source] ?? 0) >= c.target));
   const updated: ProgressState = {
     ...progress,
     eachProgress,
-    completedAt: allDone ? now : null,
+    completedAt: allGroupsSatisfied ? now : null,
   };
-  return { progress: updated, justCompleted: allDone, repeatCredited: false };
+  return { progress: updated, justCompleted: allGroupsSatisfied, repeatCredited: false };
 }
 
 // The target a given EACH-mode source needs to hit: its own override from

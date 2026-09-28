@@ -93,6 +93,94 @@ test("EACH mode falls back to shared target for a source missing from sourceTarg
   assert.equal(result.justCompleted, true);
 });
 
+test("AND_OR mode completes only once every group has a satisfied condition", () => {
+  const criteria: TileCriteria = {
+    metric: "ITEM_OBTAINED",
+    mode: "AND_OR",
+    target: 1, // unused placeholder for this mode
+    sources: [], // unused placeholder for this mode
+    repeatable: false,
+    groups: [
+      { conditions: [{ source: "Bones", target: 1 }, { source: "Big bones", target: 1 }] },
+      { conditions: [{ source: "Ashes", target: 1 }, { source: "Chef's hat", target: 1 }] },
+    ],
+  };
+  let progress = emptyProgress();
+
+  // First group satisfied via Big bones; second group still has nothing.
+  let result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Big bones", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  // Ashes satisfies the second group; the first is already satisfied via Big
+  // bones, so the tile completes now that every group has a met condition.
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Ashes", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
+test("AND_OR mode: three groups of three options each, matching (A or B or C) and (D or E or F) and (G or H or I)", () => {
+  const criteria: TileCriteria = {
+    metric: "ITEM_OBTAINED",
+    mode: "AND_OR",
+    target: 1,
+    sources: [],
+    repeatable: false,
+    groups: [
+      { conditions: [{ source: "A", target: 1 }, { source: "B", target: 1 }, { source: "C", target: 1 }] },
+      { conditions: [{ source: "D", target: 1 }, { source: "E", target: 1 }, { source: "F", target: 1 }] },
+      { conditions: [{ source: "G", target: 1 }, { source: "H", target: 1 }, { source: "I", target: 1 }] },
+    ],
+  };
+  let progress = emptyProgress();
+
+  let result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "B", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "F", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  // Third group not yet satisfied until this event.
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "H", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
+test("AND_OR mode: a condition can require more than 1", () => {
+  const criteria: TileCriteria = {
+    metric: "ITEM_OBTAINED",
+    mode: "AND_OR",
+    target: 1,
+    sources: [],
+    repeatable: false,
+    groups: [{ conditions: [{ source: "Bones", target: 3 }, { source: "Big bones", target: 1 }] }],
+  };
+  let progress = emptyProgress();
+
+  let result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Bones", amount: 2 });
+  assert.equal(result.justCompleted, false); // needs 3 Bones, only has 2
+  progress = result.progress;
+
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Bones", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
+test("AND_OR mode with no groups never completes (data-error guard, not vacuously true)", () => {
+  const criteria: TileCriteria = {
+    metric: "ITEM_OBTAINED",
+    mode: "AND_OR",
+    target: 1,
+    sources: ["Bones"],
+    repeatable: false,
+    groups: [],
+  };
+  const progress = emptyProgress();
+  // Bones isn't in any group's conditions (there are no groups), so this is
+  // rejected as "not on this tile" rather than completing anything.
+  const result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Bones", amount: 1 });
+  assert.equal(result.rejected, "source not on this tile");
+});
+
 test("repeatable tile grants bonus credit after completion instead of re-completing", () => {
   const criteria: TileCriteria = {
     metric: "ACTIVITY_COMPLETION",

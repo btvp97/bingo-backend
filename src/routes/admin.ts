@@ -28,15 +28,34 @@ const tileSchema = z.object({
   // ItemManager.getImage() on the plugin side). Optional — omit to keep the
   // existing text-only tile rendering.
   iconItemId: z.number().int().positive().optional(),
-  criteria: z.object({
-    metric: z.enum(["kill_count", "item_obtained", "activity_completion"]),
-    mode: z.enum(["sum", "each"]),
-    target: z.number().int().positive(),
-    sources: z.array(z.string()).min(1),
-    // EACH mode only — per-source override of target, e.g. {"Goblin": 2,
-    // "Chicken": 3}. A source missing from this map uses `target` instead.
-    sourceTargets: z.record(z.string(), z.number().int().positive()).optional(),
-  }),
+  criteria: z
+    .object({
+      metric: z.enum(["kill_count", "item_obtained", "activity_completion"]),
+      mode: z.enum(["sum", "each", "and_or"]),
+      // Required for sum/each, unused for and_or (see the refine below).
+      target: z.number().int().positive().optional(),
+      sources: z.array(z.string()).min(1).optional(),
+      // EACH mode only — per-source override of target, e.g. {"Goblin": 2,
+      // "Chicken": 3}. A source missing from this map uses `target` instead.
+      sourceTargets: z.record(z.string(), z.number().int().positive()).optional(),
+      // AND_OR mode only — every group needs at least one satisfied
+      // condition for the tile to complete, e.g. [{conditions: [{source:
+      // "Bones", target: 1}, {source: "Big bones", target: 1}]}, ...].
+      groups: z
+        .array(
+          z.object({
+            conditions: z
+              .array(z.object({ source: z.string(), target: z.number().int().positive() }))
+              .min(1),
+          })
+        )
+        .min(1)
+        .optional(),
+    })
+    .refine(
+      (c) => (c.mode === "and_or" ? !!c.groups : c.target !== undefined && !!c.sources),
+      { message: "and_or mode requires groups; sum/each modes require target and sources" }
+    ),
 });
 
 const createBoardSchema = z.object({
@@ -89,10 +108,19 @@ router.post("/boards", requireAdmin, asyncHandler(async (req, res) => {
           bonusPerRepeat: tile.bonusPerRepeat ?? null,
           iconItemId: tile.iconItemId ?? null,
           metric: tile.criteria.metric.toUpperCase() as "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION",
-          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH",
-          target: tile.criteria.target,
-          sources: tile.criteria.sources,
+          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH" | "AND_OR",
+          // For AND_OR, target/sources are unused by completion logic, but
+          // the DB columns are non-null — target gets a placeholder, and
+          // sources gets the flattened union of every group's conditions so
+          // the plugin's client-side matcher (which only checks metric+source,
+          // not the group structure) still knows which events are relevant.
+          target: tile.criteria.target ?? 1,
+          sources:
+            tile.criteria.mode === "and_or"
+              ? [...new Set(tile.criteria.groups!.flatMap((g) => g.conditions.map((c) => c.source)))]
+              : tile.criteria.sources!,
           sourceTargets: tile.criteria.sourceTargets ?? null,
+          groups: tile.criteria.groups ?? null,
         })),
       },
     },

@@ -8,12 +8,21 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const prisma = new PrismaClient();
 
+type AndOrGroup = { conditions: { source: string; target: number }[] };
+
 type SourceTile = {
   title: string;
   points: number;
   repeatable?: boolean;
   bonusPerRepeat?: number;
-  criteria: { metric: string; mode: string; target: number; sources: string[]; sourceTargets?: Record<string, number> };
+  criteria: {
+    metric: string;
+    mode: string;
+    target?: number;
+    sources?: string[];
+    sourceTargets?: Record<string, number>;
+    groups?: AndOrGroup[];
+  };
 };
 
 type SourceBoard = {
@@ -68,10 +77,14 @@ async function main() {
           bonusPerRepeat: tile.bonusPerRepeat ?? null,
           // The source JSON uses lowercase snake_case; the DB enum is UPPER_CASE.
           metric: tile.criteria.metric.toUpperCase() as "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION",
-          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH",
-          target: tile.criteria.target,
-          sources: tile.criteria.sources,
+          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH" | "AND_OR",
+          target: tile.criteria.target ?? 1,
+          sources:
+            tile.criteria.mode === "and_or"
+              ? [...new Set(tile.criteria.groups!.flatMap((g) => g.conditions.map((c) => c.source)))]
+              : tile.criteria.sources!,
           sourceTargets: tile.criteria.sourceTargets ?? null,
+          groups: tile.criteria.groups ?? null,
         })),
       },
     },

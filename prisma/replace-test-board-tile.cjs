@@ -7,7 +7,11 @@
 // to already be applied — run `npm run prisma:migrate` (or `prisma:deploy`)
 // first if this errors about an unknown column.
 //
-// Usage: node prisma/replace-test-board-tile.js
+// .cjs extension is deliberate: package.json has "type": "module", so a
+// plain .js file here would be loaded as an ES module and require() would
+// fail — .cjs forces CommonJS regardless of that setting.
+//
+// Usage: node prisma/replace-test-board-tile.cjs
 // Safe to delete this file after running it.
 
 const fs = require("fs");

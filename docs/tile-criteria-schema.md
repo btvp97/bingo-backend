@@ -44,6 +44,25 @@ Every tile reduces to one of two detection mechanisms:
     "sourceTargets": { "Goblin": 2, "Chicken": 3 }
   }
   ```
+- **mode: and_or** — nested boolean logic: `groups` is a list of OR-groups, each a list
+  of `{source, target}` conditions, and the tile completes only when **every** group has
+  **at least one** satisfied condition (AND across groups, OR within a group). Any
+  number of groups, any number of conditions per group. Example: "(Obtain bones OR
+  obtain big bones) AND (obtain ashes OR obtain a chef's hat)":
+  ```json
+  {
+    "metric": "item_obtained",
+    "mode": "and_or",
+    "groups": [
+      { "conditions": [{ "source": "Bones", "target": 1 }, { "source": "Big bones", "target": 1 }] },
+      { "conditions": [{ "source": "Ashes", "target": 1 }, { "source": "Chef's hat", "target": 1 }] }
+    ]
+  }
+  ```
+  `target` and `sources` are omitted/unused for this mode — the real criteria lives
+  entirely in `groups`. A three-group, three-option-each tile, e.g. "(A or B or C) and
+  (D or E or F) and (G or H or I)", is just three groups each with three conditions —
+  no limit on group count or conditions per group.
 - **repeatable** — if true, the tile can be credited more than once per team (only
   "Get a Pet" on this board). Pairs with **bonusPerRepeat**: once the tile first
   completes (target reached), each additional matching event afterward adds

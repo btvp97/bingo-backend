@@ -58,8 +58,12 @@
       "criteria": { "metric": "kill_count", "mode": "sum", "target": 5, "sources": ["Hill Giant"] } },
     { "title": "Obtain 3 Big Bones", "points": 1, "repeatable": false,
       "criteria": { "metric": "item_obtained", "mode": "sum", "target": 3, "sources": ["Big bones"] } },
-    { "title": "Kill 10 Al-Kharid Warriors", "points": 1, "repeatable": false,
-      "criteria": { "metric": "kill_count", "mode": "sum", "target": 10, "sources": ["Al-Kharid warrior"] } },
+    { "title": "Obtain Bones/Big Bones AND Ashes/Chef's Hat", "points": 1, "repeatable": false,
+      "criteria": { "metric": "item_obtained", "mode": "and_or",
+        "groups": [
+          { "conditions": [{ "source": "Bones", "target": 1 }, { "source": "Big bones", "target": 1 }] },
+          { "conditions": [{ "source": "Ashes", "target": 1 }, { "source": "Chef's hat", "target": 1 }] }
+        ] } },
     { "title": "Kill 2 Goblins and 3 Chickens", "points": 1, "repeatable": false,
       "criteria": { "metric": "kill_count", "mode": "each", "target": 3, "sources": ["Goblin", "Chicken"],
         "sourceTargets": { "Goblin": 2, "Chicken": 3 } } }

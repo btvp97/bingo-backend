@@ -50,6 +50,7 @@ router.post("/", authenticateTeam, asyncHandler(async (req: AuthedRequest, res) 
     sources: tile.sources,
     repeatable: tile.repeatable,
     sourceTargets: (tile.sourceTargets as Record<string, number> | null) ?? undefined,
+    groups: (tile.groups as TileCriteria["groups"]) ?? undefined,
   };
   const before: ProgressState = existing
     ? {
