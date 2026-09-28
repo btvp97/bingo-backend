@@ -1,0 +1,337 @@
+{
+  "boardName": "Misclickers Fall 26 Bingo",
+  "notes": "Official first bingo board. Tiles are voted on one at a time; each placeholder gets swapped for a real tile via prisma/set-tile.cjs as votes land, in place, without disturbing the rest of the grid or resetting other tiles' progress.",
+  "bonuses": {
+    "horizontal": 5,
+    "vertical": 5,
+    "diagonal": 10,
+    "blackout": 0
+  },
+  "tiles": [
+    {
+      "title": "Tile 1 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 2 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 3 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 4 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 5 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 6 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 7 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 8 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 9 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 10 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 11 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 12 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 13 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 14 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 15 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 16 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 17 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 18 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 19 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 20 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 21 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 22 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 23 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 24 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    },
+    {
+      "title": "Tile 25 (TBD)",
+      "points": 0,
+      "repeatable": false,
+      "criteria": {
+        "metric": "activity_completion",
+        "mode": "sum",
+        "target": 999999,
+        "sources": [
+          "TBD"
+        ]
+      }
+    }
+  ]
+}
