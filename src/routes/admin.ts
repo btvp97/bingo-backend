@@ -32,8 +32,8 @@ const tileSchema = z.object({
   criteria: z
     .object({
       metric: z.enum(["kill_count", "item_obtained", "activity_completion"]),
-      mode: z.enum(["sum", "each", "and_or"]),
-      // Required for sum/each, unused for and_or (see the refine below).
+      mode: z.enum(["sum", "each", "and_or", "or_and"]),
+      // Required for sum/each, unused for and_or/or_and (see the refine below).
       target: z.number().int().positive().optional(),
       sources: z.array(z.string()).min(1).optional(),
       // EACH mode only — per-source override of target, e.g. {"Goblin": 2,
@@ -52,10 +52,30 @@ const tileSchema = z.object({
         )
         .min(1)
         .optional(),
+      // OR_AND mode only — the tile completes as soon as any ONE set has
+      // every one of its own conditions satisfied, e.g. a full Blood Moon
+      // armour set OR a full Eclipse Moon set: [{conditions: [{source:
+      // "Blood Moon helm", target: 1}, {source: "Blood Moon chestplate",
+      // target: 1}, {source: "Blood Moon tassets", target: 1}]}, {conditions:
+      // [...Eclipse Moon pieces]}].
+      sets: z
+        .array(
+          z.object({
+            conditions: z
+              .array(z.object({ source: z.string(), target: z.number().int().positive() }))
+              .min(1),
+          })
+        )
+        .min(1)
+        .optional(),
     })
     .refine(
-      (c) => (c.mode === "and_or" ? !!c.groups : c.target !== undefined && !!c.sources),
-      { message: "and_or mode requires groups; sum/each modes require target and sources" }
+      (c) => {
+        if (c.mode === "and_or") return !!c.groups;
+        if (c.mode === "or_and") return !!c.sets;
+        return c.target !== undefined && !!c.sources;
+      },
+      { message: "and_or mode requires groups; or_and mode requires sets; sum/each modes require target and sources" }
     ),
 });
 
@@ -109,22 +129,26 @@ router.post("/boards", requireAdmin, asyncHandler(async (req, res) => {
           bonusPerRepeat: tile.bonusPerRepeat ?? null,
           iconItemId: tile.iconItemId ?? null,
           metric: tile.criteria.metric.toUpperCase() as "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION",
-          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH" | "AND_OR",
-          // For AND_OR, target/sources are unused by completion logic, but
-          // the DB columns are non-null — target gets a placeholder, and
-          // sources gets the flattened union of every group's conditions so
-          // the plugin's client-side matcher (which only checks metric+source,
-          // not the group structure) still knows which events are relevant.
+          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH" | "AND_OR" | "OR_AND",
+          // For AND_OR/OR_AND, target/sources are unused by completion logic,
+          // but the DB columns are non-null — target gets a placeholder, and
+          // sources gets the flattened union of every group's/set's
+          // conditions so the plugin's client-side matcher (which only
+          // checks metric+source, not the group/set structure) still knows
+          // which events are relevant.
           target: tile.criteria.target ?? 1,
           sources:
             tile.criteria.mode === "and_or"
               ? [...new Set(tile.criteria.groups!.flatMap((g) => g.conditions.map((c) => c.source)))]
+              : tile.criteria.mode === "or_and"
+              ? [...new Set(tile.criteria.sets!.flatMap((s) => s.conditions.map((c) => c.source)))]
               : tile.criteria.sources!,
           // Json? fields can't take a plain `null` in Prisma's create input —
           // that's ambiguous between SQL NULL and a JSON null value — so the
           // "not set" case needs the Prisma.DbNull sentinel instead.
           sourceTargets: tile.criteria.sourceTargets ?? Prisma.DbNull,
           groups: tile.criteria.groups ?? Prisma.DbNull,
+          sets: tile.criteria.sets ?? Prisma.DbNull,
         })),
       },
     },

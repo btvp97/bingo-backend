@@ -29,6 +29,7 @@ type SourceTile = {
     sources?: string[];
     sourceTargets?: Record<string, number>;
     groups?: AndOrGroup[];
+    sets?: AndOrGroup[];
   };
 };
 
@@ -89,14 +90,17 @@ async function main() {
           repeatable: tile.repeatable ?? false,
           bonusPerRepeat: tile.bonusPerRepeat ?? null,
           metric: tile.criteria.metric.toUpperCase() as "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION",
-          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH" | "AND_OR",
+          mode: tile.criteria.mode.toUpperCase() as "SUM" | "EACH" | "AND_OR" | "OR_AND",
           target: tile.criteria.target ?? 1,
           sources:
             tile.criteria.mode === "and_or"
               ? [...new Set(tile.criteria.groups!.flatMap((g) => g.conditions.map((c) => c.source)))]
+              : tile.criteria.mode === "or_and"
+              ? [...new Set(tile.criteria.sets!.flatMap((s) => s.conditions.map((c) => c.source)))]
               : tile.criteria.sources!,
           sourceTargets: tile.criteria.sourceTargets ?? Prisma.DbNull,
           groups: tile.criteria.groups ?? Prisma.DbNull,
+          sets: tile.criteria.sets ?? Prisma.DbNull,
         })),
       },
     },

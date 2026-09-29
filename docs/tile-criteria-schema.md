@@ -63,6 +63,34 @@ Every tile reduces to one of two detection mechanisms:
   entirely in `groups`. A three-group, three-option-each tile, e.g. "(A or B or C) and
   (D or E or F) and (G or H or I)", is just three groups each with three conditions —
   no limit on group count or conditions per group.
+- **mode: or_and** — the inverse nesting of and_or: `sets` is a list of AND-sets, each
+  a list of `{source, target}` conditions, and the tile completes as soon as **any
+  one** set has **every** one of its own conditions satisfied (OR across sets, AND
+  within a set). Used for "complete any one matching set" tiles — and_or *cannot*
+  express this correctly: it would wrongly complete on 3 mismatched pieces from 3
+  different sets, since each OR-group only needs "at least one" match independent of
+  which set it came from. Example: "(Blood Moon helm AND chestplate AND tassets) OR
+  (Eclipse Moon helm AND chestplate AND tassets)":
+  ```json
+  {
+    "metric": "item_obtained",
+    "mode": "or_and",
+    "sets": [
+      { "conditions": [
+        { "source": "Blood Moon helm", "target": 1 },
+        { "source": "Blood Moon chestplate", "target": 1 },
+        { "source": "Blood Moon tassets", "target": 1 }
+      ] },
+      { "conditions": [
+        { "source": "Eclipse Moon helm", "target": 1 },
+        { "source": "Eclipse Moon chestplate", "target": 1 },
+        { "source": "Eclipse Moon tassets", "target": 1 }
+      ] }
+    ]
+  }
+  ```
+  `target` and `sources` are omitted/unused for this mode — the real criteria lives
+  entirely in `sets`. Any number of sets, any number of conditions per set.
 - **repeatable** — if true, the tile can be credited more than once per team (only
   "Get a Pet" on this board). Pairs with **bonusPerRepeat**: once the tile first
   completes (target reached), each additional matching event afterward adds

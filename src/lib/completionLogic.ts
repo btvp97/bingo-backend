@@ -18,12 +18,24 @@
 //                  hat). Reuses the same eachProgress {source: count} map
 //                  EACH mode uses; target/sources/sourceTargets are unused
 //                  placeholders for this mode.
+//   - mode "or_and": the inverse nesting of and_or. criteria.sets is a list
+//                  of AND-sets, each a list of {source, target} conditions;
+//                  the tile completes as soon as ANY ONE set has every one
+//                  of its own conditions satisfied — OR across sets, AND
+//                  within a set, e.g. (Blood Moon helm AND chestplate AND
+//                  tassets) OR (Eclipse Moon helm AND chestplate AND
+//                  tassets). and_or cannot express this: it would wrongly
+//                  complete on 3 mismatched pieces from 3 different sets,
+//                  since each OR-group only needs "at least one" match
+//                  independently of which set it came from. Reuses the same
+//                  eachProgress map; target/sources/sourceTargets are unused
+//                  placeholders for this mode.
 //   - repeatable:  once complete, further matching events don't re-complete
 //                  the tile — they add to repeatCount instead, which the
 //                  caller turns into bonus points via bonusPerRepeat.
 
 export type Metric = "KILL_COUNT" | "ITEM_OBTAINED" | "ACTIVITY_COMPLETION";
-export type Mode = "SUM" | "EACH" | "AND_OR";
+export type Mode = "SUM" | "EACH" | "AND_OR" | "OR_AND";
 
 export type AndOrCondition = { source: string; target: number };
 export type AndOrGroup = { conditions: AndOrCondition[] };
@@ -39,6 +51,8 @@ export type TileCriteria = {
   sourceTargets?: Record<string, number>;
   // AND_OR mode only — see the note above. Required (non-empty) for that mode.
   groups?: AndOrGroup[];
+  // OR_AND mode only — see the note above. Required (non-empty) for that mode.
+  sets?: AndOrGroup[];
 };
 
 export type ProgressState = {
@@ -78,6 +92,8 @@ export function applyCompletionEvent(
   const candidateSources =
     criteria.mode === "AND_OR"
       ? (criteria.groups ?? []).flatMap((g) => g.conditions.map((c) => c.source))
+      : criteria.mode === "OR_AND"
+      ? (criteria.sets ?? []).flatMap((s) => s.conditions.map((c) => c.source))
       : criteria.sources;
 
   const canonicalSource = candidateSources.find(
@@ -119,21 +135,37 @@ export function applyCompletionEvent(
     return { progress: updated, justCompleted: allDone, repeatCredited: false };
   }
 
-  // mode === "AND_OR"
   const eachProgress = { ...progress.eachProgress };
   eachProgress[canonicalSource] = (eachProgress[canonicalSource] ?? 0) + input.amount;
-  // A tile with no groups defined is a data error, not a trivially-satisfied
-  // tile — .every() on an empty array is vacuously true, so guard against it
-  // explicitly rather than let a misconfigured tile silently auto-complete.
-  const allGroupsSatisfied =
-    (criteria.groups ?? []).length > 0 &&
-    criteria.groups!.every((group) => group.conditions.some((c) => (eachProgress[c.source] ?? 0) >= c.target));
+
+  if (criteria.mode === "AND_OR") {
+    // A tile with no groups defined is a data error, not a trivially-satisfied
+    // tile — .every() on an empty array is vacuously true, so guard against it
+    // explicitly rather than let a misconfigured tile silently auto-complete.
+    const allGroupsSatisfied =
+      (criteria.groups ?? []).length > 0 &&
+      criteria.groups!.every((group) => group.conditions.some((c) => (eachProgress[c.source] ?? 0) >= c.target));
+    const updated: ProgressState = {
+      ...progress,
+      eachProgress,
+      completedAt: allGroupsSatisfied ? now : null,
+    };
+    return { progress: updated, justCompleted: allGroupsSatisfied, repeatCredited: false };
+  }
+
+  // mode === "OR_AND": complete as soon as any one set has every condition
+  // met. Same empty-array guard as AND_OR, applied per-set via .every() —
+  // an empty set's conditions would vacuously satisfy .every(), so a set
+  // with zero conditions is treated as never-satisfied instead.
+  const anySetSatisfied = (criteria.sets ?? []).some(
+    (set) => set.conditions.length > 0 && set.conditions.every((c) => (eachProgress[c.source] ?? 0) >= c.target)
+  );
   const updated: ProgressState = {
     ...progress,
     eachProgress,
-    completedAt: allGroupsSatisfied ? now : null,
+    completedAt: anySetSatisfied ? now : null,
   };
-  return { progress: updated, justCompleted: allGroupsSatisfied, repeatCredited: false };
+  return { progress: updated, justCompleted: anySetSatisfied, repeatCredited: false };
 }
 
 // The target a given EACH-mode source needs to hit: its own override from

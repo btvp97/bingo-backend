@@ -25,6 +25,15 @@ enum Mode {
   // an OR within each group. `target`/`sources`/`sourceTargets` are unused
   // placeholders for this mode; the real criteria lives in `groups`.
   AND_OR
+  // The inverse nesting from AND_OR: tile.sets is a list of AND-sets (each a
+  // list of {source, target} conditions), and the tile completes as soon as
+  // ANY one set has every one of its conditions satisfied — i.e. an OR
+  // across sets, an AND within each set. For "complete any one full matching
+  // set" tiles (e.g. a full Blood Moon armour set OR a full Eclipse Moon
+  // set), which AND_OR cannot express: AND_OR would wrongly complete on any
+  // 3 mismatched pieces from 3 different sets, since each OR-group only
+  // checks for "at least one" match independently.
+  OR_AND
 }
 
 enum BoardStatus {
@@ -86,6 +95,9 @@ model Tile {
   groups         Json?          // AND_OR mode only: [{ conditions: [{source,
                                  // target}] }]. Tile completes when every group
                                  // has at least one condition met. See Mode.AND_OR.
+  sets           Json?          // OR_AND mode only: [{ conditions: [{source,
+                                 // target}] }]. Tile completes when any one set
+                                 // has every condition met. See Mode.OR_AND.
   iconItemId     Int?           // Optional OSRS item ID rendered client-side via
                                  // RuneLite's ItemManager instead of tile text.
                                  // Independent of metric/sources — a KILL_COUNT

@@ -181,6 +181,65 @@ test("AND_OR mode with no groups never completes (data-error guard, not vacuousl
   assert.equal(result.rejected, "source not on this tile");
 });
 
+test("OR_AND mode completes once any one full set is satisfied", () => {
+  const criteria: TileCriteria = {
+    metric: "ITEM_OBTAINED",
+    mode: "OR_AND",
+    target: 1, // unused placeholder for this mode
+    sources: [], // unused placeholder for this mode
+    repeatable: false,
+    sets: [
+      { conditions: [{ source: "Blood Moon helm", target: 1 }, { source: "Blood Moon chestplate", target: 1 }, { source: "Blood Moon tassets", target: 1 }] },
+      { conditions: [{ source: "Blue Moon helm", target: 1 }, { source: "Blue Moon chestplate", target: 1 }, { source: "Blue Moon tassets", target: 1 }] },
+      { conditions: [{ source: "Eclipse Moon helm", target: 1 }, { source: "Eclipse Moon chestplate", target: 1 }, { source: "Eclipse Moon tassets", target: 1 }] },
+    ],
+  };
+  let progress = emptyProgress();
+
+  let result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blood Moon helm", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blood Moon chestplate", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blood Moon tassets", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
+test("OR_AND mode does NOT complete on mismatched pieces from different sets (the case AND_OR gets wrong)", () => {
+  const criteria: TileCriteria = {
+    metric: "ITEM_OBTAINED",
+    mode: "OR_AND",
+    target: 1,
+    sources: [],
+    repeatable: false,
+    sets: [
+      { conditions: [{ source: "Blood Moon helm", target: 1 }, { source: "Blood Moon chestplate", target: 1 }, { source: "Blood Moon tassets", target: 1 }] },
+      { conditions: [{ source: "Blue Moon helm", target: 1 }, { source: "Blue Moon chestplate", target: 1 }, { source: "Blue Moon tassets", target: 1 }] },
+      { conditions: [{ source: "Eclipse Moon helm", target: 1 }, { source: "Eclipse Moon chestplate", target: 1 }, { source: "Eclipse Moon tassets", target: 1 }] },
+    ],
+  };
+  let progress = emptyProgress();
+
+  // One piece from each of the three different sets — no single set is complete.
+  let result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blood Moon helm", amount: 1 });
+  progress = result.progress;
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blue Moon chestplate", amount: 1 });
+  progress = result.progress;
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Eclipse Moon tassets", amount: 1 });
+  assert.equal(result.justCompleted, false);
+
+  // Finishing off the Blood Moon set specifically is what actually completes it.
+  progress = result.progress;
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blood Moon chestplate", amount: 1 });
+  assert.equal(result.justCompleted, false);
+  progress = result.progress;
+  result = applyCompletionEvent(criteria, progress, { metric: "ITEM_OBTAINED", source: "Blood Moon tassets", amount: 1 });
+  assert.equal(result.justCompleted, true);
+});
+
 test("repeatable tile grants bonus credit after completion instead of re-completing", () => {
   const criteria: TileCriteria = {
     metric: "ACTIVITY_COMPLETION",

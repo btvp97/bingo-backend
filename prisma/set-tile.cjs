@@ -15,8 +15,9 @@
 //     "repeatable": false,
 //     "criteria": { "metric": "kill_count", "mode": "sum", "target": 200, "sources": ["The Nightmare"] }
 //   }
-// mode "each" also accepts "sourceTargets"; mode "and_or" uses "groups"
-// instead of target/sources — see docs/tile-criteria-schema.md.
+// mode "each" also accepts "sourceTargets"; mode "and_or" uses "groups", and
+// mode "or_and" uses "sets" — instead of target/sources — see
+// docs/tile-criteria-schema.md.
 //
 // Usage: node prisma/set-tile.cjs "<Board Name>" <row> <col> <path-to-tile.json>
 // Example: node prisma/set-tile.cjs "Misclickers Fall 26 Bingo" 0 0 tile-0-0.json
@@ -51,6 +52,7 @@ const prisma = new PrismaClient();
 function buildTileData(tile) {
   const criteria = tile.criteria;
   const isAndOr = criteria.mode === "and_or";
+  const isOrAnd = criteria.mode === "or_and";
   return {
     title: tile.title,
     points: tile.points,
@@ -61,9 +63,12 @@ function buildTileData(tile) {
     target: criteria.target ?? 1,
     sources: isAndOr
       ? [...new Set(criteria.groups.flatMap((g) => g.conditions.map((c) => c.source)))]
+      : isOrAnd
+      ? [...new Set(criteria.sets.flatMap((s) => s.conditions.map((c) => c.source)))]
       : criteria.sources,
     sourceTargets: criteria.sourceTargets ?? Prisma.DbNull,
     groups: criteria.groups ?? Prisma.DbNull,
+    sets: criteria.sets ?? Prisma.DbNull,
   };
 }
 
