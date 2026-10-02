@@ -10,7 +10,12 @@ export type TeamTokenPayload = {
 };
 
 export function signTeamToken(payload: TeamTokenPayload): string {
-  return jwt.sign(payload, env.jwtSecret, { expiresIn: "12h" });
+  // Was 12h — too short for a RuneLite client left open across multiple play
+  // sessions (the plugin had no way to recover from an expired token short
+  // of the player manually restarting it in settings). 30 days comfortably
+  // outlasts any realistic client uptime; the plugin also now auto-rejoins
+  // on a 401 as a backstop, so this doesn't need to be exactly right.
+  return jwt.sign(payload, env.jwtSecret, { expiresIn: "30d" });
 }
 
 export function verifyTeamToken(token: string): TeamTokenPayload {
